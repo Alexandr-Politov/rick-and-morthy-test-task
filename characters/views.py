@@ -7,12 +7,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+
 from characters.models import Character
 from characters.serializers import CharacterSerializer
 
 
+@extend_schema(responses={status.HTTP_200_OK: CharacterSerializer})
 @api_view(["GET"])
 def get_random_character(request: Request) -> Response:
+    """Get random character from Rick and Morty world."""
     pks = Character.objects.values_list("pk", flat=True)
     random_pk = random.choice(pks)
     random_character = Character.objects.get(pk=random_pk)
@@ -34,3 +38,16 @@ class CharacterListView(generics.ListAPIView):
         if name:
             queryset = queryset.filter(name__icontains=name)
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="name",
+                description="Filter characters by name (insensitive contains)",
+                required=False,
+                type=str,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs) -> Response:
+        return super().get(request, *args, **kwargs)
