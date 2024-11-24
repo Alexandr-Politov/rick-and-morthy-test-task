@@ -1,5 +1,6 @@
 import random
 
+from django.db.models import QuerySet
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -17,3 +18,19 @@ def get_random_character(request: Request) -> Response:
     random_character = Character.objects.get(pk=random_pk)
     serializer = CharacterSerializer(random_character)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CharacterListView(generics.ListAPIView):
+    queryset = Character.objects.all()
+    serializer_class = CharacterSerializer
+
+    def get_queryset(self) -> QuerySet:
+        """
+        Optionally restricts the returned purchases to a given character,
+        by filtering against a `name` query parameter in the URL.
+        """
+        queryset = super().get_queryset()
+        name = self.request.query_params.get("name")
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+        return queryset
