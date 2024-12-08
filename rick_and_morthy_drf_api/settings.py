@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # 3d party apps:
     "rest_framework",
     "drf_spectacular",
+    "django_celery_beat",
     # my apps:
     "characters",
 ]
